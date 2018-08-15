@@ -1,0 +1,215 @@
+public class ProductTableController {
+
+    public List<Product_Table__c> products {get;set;}
+    public Product_Table__c productView {get;set;}
+    public Contact contactFieldAfterInsert {get;set;}
+    public Order_Table__c orderTableRecord {get;set;}
+    
+    public Id productId {get;set;}
+    public Id paramDetailId {get;set;}
+    public Id buyId {get;set;}
+          
+    public Decimal oneUnitPrice {get;set;}
+    public Decimal TotalAmount {get;set;}
+    public Integer multiplier {get;set;}
+    public Boolean disabledButton {get;set;}
+    
+    public Decimal inStockUnitsAvailable {get;set;}
+    public String inStockProductName {get;set;}
+    
+    public Boolean isErrorDisplay {get;set;}
+    public Boolean isInsertDisplay {get;set;}
+    
+    public String messageProductName {get;set;}
+    public Decimal messageUnits {get;set;}
+    public Decimal messageTotalAmount {get;set;}
+    public String messageEmail {get;set;}
+    
+    public String pageName {get;set;}
+    public PageReference showPrevious {get;set;}
+    
+    
+    public ProductTableController(){
+
+        disabledButton = true;
+        TotalAmount = 0.00;
+        isErrorDisplay = false;
+        isInsertDisplay = false;
+        
+        products = new List<Product_Table__c>();
+       
+        for(Product_Table__c product : [SELECT Id, Name, Image_Url__c, Title__c, Product_Description__c, 
+                                        Unit_Price__c, Units_Available__c
+                                        FROM Product_Table__c] ){
+           
+            if(product.Product_Description__c.length() > 100){
+    			product.Product_Description__c = product.Product_Description__c.subString(0,101)+'...';
+            }
+            
+            products.add(product); 
+       
+        }
+        
+    }
+     
+    
+    public Product_Table__c getProductViewDetail(){
+    	
+        productView = [SELECT Id, Name, Image_Url__c, Title__c, Product_Description__c, Unit_Price__c, Units_Available__c 
+                       FROM Product_Table__c WHERE Id = :Apexpages.currentPage().getParameters().get('id') ];        
+        oneUnitPrice = productView.Unit_Price__c;
+        inStockUnitsAvailable = productView.Units_Available__c;
+        inStockProductName = productView.Name;
+        return productView;
+                                                                   
+    }
+    
+    
+    public Contact getContactInformation(){
+        
+        if(contactFieldAfterInsert == null) contactFieldAfterInsert = new Contact();
+        return contactFieldAfterInsert;
+        
+    }
+
+        
+    public void saveNewOrder(){ 
+         
+        productView.Units_Available__c = productView.Units_Available__c - multiplier;
+        if(productView.Units_Available__c >= 0){
+            
+            List<Contact> contactListAfterUpdate = new List<Contact>();
+            for(Contact contactRecord : [SELECT Id, FirstName, LastName, Email 
+                                         FROM Contact ]){
+                if(contactRecord.Email == contactFieldAfterInsert.Email){
+                    contactRecord.FirstName = contactFieldAfterInsert.FirstName;
+                    contactRecord.LastName = contactFieldAfterInsert.LastName;
+                    contactRecord.Email = contactFieldAfterInsert.Email;
+                    contactListAfterUpdate.add(contactRecord);
+               }                     
+            }
+            
+            orderTableRecord = new Order_Table__c();           
+            
+            if(contactListAfterUpdate.size()>0){
+            	update contactListAfterUpdate[0];
+                orderTableRecord.Contact__c = contactListAfterUpdate[0].Id;
+            }else{    
+                insert contactFieldAfterInsert;
+                orderTableRecord.Contact__c = contactFieldAfterInsert.Id;
+            }
+                
+            orderTableRecord.Product__c = productView.Id;
+            orderTableRecord.Units__c = multiplier;
+            calculateTotalAmount();
+            orderTableRecord.Order_Amount__c = TotalAmount;      
+              
+            insert orderTableRecord;
+                
+            update productView;
+   			
+            messageProductName = inStockProductName;
+            messageUnits = orderTableRecord.Units__c;
+            messageTotalAmount = orderTableRecord.Order_Amount__c;
+         	messageEmail = contactFieldAfterInsert.Email;
+            
+            isInsertDisplay = true;            
+            
+        }else{
+            isErrorDisplay = true; 
+        }
+        
+    }
+
+    
+	public void calculateTotalAmount(){
+
+        if(oneUnitPrice != null){
+        	TotalAmount = oneUnitPrice * multiplier;
+        }
+        
+    }
+    
+    
+    public void checkDisabledButton(){
+        
+        if(contactFieldAfterInsert.Email != null && contactFieldAfterInsert.LastName != null 
+           && multiplier != null && multiplier != 0 ){
+        	disabledButton = false; 
+        }else{
+            disabledButton = true;
+        }
+        
+    }
+    
+    
+	public void closeErrorDisplay(){
+        isErrorDisplay = false;
+    }
+    
+    
+    public void closeIsInsertDisplay(){
+        isInsertDisplay = false;
+    }
+    
+    
+    public PageReference showProductDetail(){
+        
+        PageReference showDetail = Page.ProductDetailPage;
+        showDetail.getParameters().put('id', productId);
+        showDetail.setRedirect(true);
+        return showDetail;
+        
+    }
+ 
+    
+    public PageReference showProductTable(){
+        
+        PageReference showProduct = Page.ProductTablePage;
+        showProduct.setRedirect(true);
+        return showProduct;
+        
+    }
+
+    
+    public PageReference showBuyAfterProductDetail(){
+ 
+        paramDetailId = ApexPages.currentPage().getParameters().get('id');        
+        PageReference showBuyAfterDetail = Page.BuyProductPage;
+        showBuyAfterDetail.getParameters().put('id', paramDetailId);
+        showBuyAfterDetail.getParameters().put('backTo', 'detailPage');
+        showBuyAfterDetail.setRedirect(true);
+		return showBuyAfterDetail;
+        
+    }    
+
+    
+    public PageReference showBuyProduct(){
+
+        PageReference showBuy = Page.BuyProductPage;
+        showBuy.getParameters().put('id', buyId);
+        showBuy.getParameters().put('backTo', 'mainPage');
+        showBuy.setRedirect(true);
+        return showBuy; 
+        
+    }
+    
+
+    public PageReference showPreviousPage(){
+        
+        pageName = ApexPages.currentPage().getParameters().get('backTo');
+        
+        if(pageName == 'mainPage'){
+            showPrevious = Page.ProductTablePage;
+        }else if(pageName == 'detailPage'){
+            showPrevious = Page.ProductDetailPage;
+            paramDetailId = ApexPages.currentPage().getParameters().get('id');
+            showPrevious.getParameters().put('id', paramDetailId);
+        }
+        
+        showPrevious.setRedirect(true);
+        return showPrevious;        
+        
+    }
+    
+}
