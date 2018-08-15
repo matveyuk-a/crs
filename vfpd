@@ -1,0 +1,50 @@
+<apex:page controller="ProductTableController" showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">
+ <apex:slds />
+ <apex:form >
+
+ <div class="slds-scope">
+                    
+     	<div class="slds-grid slds-wrap">
+            
+          <div class="slds-col slds-size_1-of-1 slds-border_top slds-border_bottom slds-p-top_medium 
+                      slds-p-bottom_medium slds-text-align_center" 
+               style="color:#706e6b; background:#f4f6fe; border-color:#e3e5ed">                
+              <div class="slds-text-heading_large"><apex:outputField value="{!productViewDetail.Name}" /></div>
+          </div>
+                           
+          <div class="slds-col slds-size_1-of-2 slds-p-top_medium slds-p-bottom_medium slds-text-align_center">
+               <img src="{!productViewDetail.Image_Url__c}" alt="Description of the image" />                            
+          </div>
+                
+          <div class="slds-col slds-size_1-of-2 slds-p-top_medium slds-p-bottom_medium" style="color:#0d0e12;">                
+              <div style="color:#706e6b; font-size:1rem;"> Amount:</div>
+              <apex:outputField value="{!productViewDetail.Units_Available__c}" /> <br/><br/>
+              <div style="color:#706e6b; font-size:1rem;"> Title:</div>
+              <apex:outputField value="{!productViewDetail.Title__c}" /> <br/><br/>
+              <div style="color:#706e6b; font-size:1rem;"> Description:</div>
+              <apex:outputField value="{!productViewDetail.Product_Description__c}" /> <br/><br/>
+              <div style="color:#706e6b; font-size:1rem;"> Cost:</div>
+              <apex:outputField value="{!productViewDetail.Unit_Price__c}" /><br/><br/>                             
+          </div>
+                         
+          <div class="slds-col slds-size_1-of-1 slds-border_top slds-border_bottom slds-p-top_medium slds-p-bottom_medium"
+               style="background:#f4f6fe; border-color:#e3e5ed;">
+              <div class="slds-text-align_center">
+                  <apex:commandButton styleClass="slds-button slds-button_neutral" action="{!showProductTable}" value="To Shopping" />                
+                  <apex:commandButton styleClass="slds-button slds-button_brand" action="{!showBuyAfterProductDetail}" value="Buy" />
+              </div>
+          </div>
+            
+        </div>     
+     
+       <footer class="slds-p-around_large">        
+         <div class="slds-grid slds-grid_align-spread">
+           <p class="slds-col"></p>
+           <p class="slds-col">&copy; VRPTRAINING-AUGUST</p>
+         </div>  
+       </footer>
+     
+ </div>
+       
+ </apex:form>
+</apex:page>
