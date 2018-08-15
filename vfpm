@@ -1,0 +1,70 @@
+<apex:page controller="ProductTableController" showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">   
+<apex:form >
+<apex:slds />
+   
+  <div class="slds-scope">
+      
+      <table class="slds-table slds-table_bordered slds-table_cell-buffer slds-no-row-hover" >
+          <thead>
+              
+                <tr class="slds-text-heading_label">
+                  <th scope="col">Image</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Amount</th>
+                  <th scope="col">Cost</th>
+                  <th scope="col"></th>
+                </tr>
+              
+          </thead>
+          
+          <tbody >
+            <apex:repeat value="{!products}" var="a" >
+                <tr>     
+                  <td>    
+                    <div style="width: 8rem;">                            
+                       <img src="{!a.Image_Url__c}" alt="Description of the image" />            
+                    </div>             	  
+                  </td>   
+                  <td >
+                     <apex:commandLink value="{!a.Name}" action="{!showProductDetail}" >
+                     	<apex:param name="productId" value="{!a.Id}" assignTo="{!productId}"/>    	
+                     </apex:commandLink>
+                  </td>  
+                  
+                  <td > 
+                      <apex:outputField value="{!a.Title__c}" />           
+                  </td>
+                  
+                  <td >      
+                      <apex:outputField value="{!a.Product_Description__c}"  />
+                      <apex:commandLink value="More" action="{!showProductDetail}" rendered="{!LEN(a.Product_Description__c)>100}">
+                      	<apex:param name="productId" value="{!a.Id}" assignTo="{!productId}"/>
+                      </apex:commandLink>                 
+                  </td>
+                  <td ><apex:outputField value="{!a.Units_Available__c}" /> </td>  
+                  <td ><apex:outputField value="{!a.Unit_Price__c}" /> </td>
+                  <td >
+                      <apex:commandLink action="{!showBuyProduct}" value="Buy"
+                                          styleClass="slds-button slds-button_brand">
+                      		<apex:param name="buyId" value="{!a.Id}" assignTo="{!buyId}" />
+                      </apex:commandLink> 
+                  </td>
+                </tr>
+      		</apex:repeat>
+          </tbody>
+          
+	  </table>
+         
+      <footer class="slds-p-around_large">        
+         <div class="slds-grid slds-grid_align-spread">
+           <p class="slds-col"></p>
+           <p class="slds-col">&copy; VRPTRAINING-AUGUST</p>
+         </div>  
+      </footer>
+      
+  </div>
+
+</apex:form>  
+</apex:page>
