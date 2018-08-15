@@ -1,0 +1,171 @@
+<apex:page controller="ProductTableController" showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">
+  <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <head>
+    <apex:slds /> 
+  </head>
+  <body>
+       
+ <apex:form >
+   
+ <apex:actionFunction action="{!calculateTotalAmount}" name="doMultiplier" reRender="myMultiplier" />    
+ <apex:actionFunction action="{!checkDisabledButton}" name="doCheckDisabledButton" reRender="myDisable" />
+
+ <div class="slds-scope">
+    
+     	<div class="slds-grid slds-wrap">
+            
+          <div class="slds-col slds-size_1-of-2 slds-border_top slds-border_bottom slds-p-top_medium 
+                      slds-p-bottom_medium slds-text-align_center" 
+               style="color:#706e6b; background:#f4f6fe; border-color:#e3e5ed">  
+              <div class="slds-text-heading_medium">Contact Information</div>
+          </div>
+            
+          <div class="slds-col slds-size_1-of-2 slds-border_top slds-border_bottom slds-p-top_medium 
+                      slds-p-bottom_medium slds-text-align_center" 
+               style="color:#706e6b; background:#f4f6fe; border-color:#e3e5ed">
+              <div class="slds-text-heading_medium">Product Information</div>
+          </div>
+          
+          <div class="slds-col slds-size_1-of-4 slds-text-align_right slds-p-top_large slds-p-bottom_large slds-p-right_x-small">
+              <div style="color:#706e6b; font-size:1rem;"> Email</div>
+              <div class="slds-p-top_large" style="color:#706e6b; font-size:1rem;"> FirstName</div>
+              <div class="slds-p-top_large" style="color:#706e6b; font-size:1rem;"> LastName</div> 
+          </div> 
+          
+          <div class="slds-col slds-size_1-of-4 slds-text-align_left slds-p-top_large slds-p-bottom_large slds-p-left_x-small">              	
+              
+              <apex:inputField type="email" onkeyup="doCheckDisabledButton()" value="{!contactInformation.Email}"
+                               styleClass="slds-input"
+                               style="width:200px; " required="false" /> <br/>
+              <apex:inputField onkeyup="doCheckDisabledButton()" id="firstNameField" value="{!contactInformation.FirstName}"
+                               styleClass="slds-input slds-m-top_medium" style="width:200px; " /> <br/>
+              
+              <apex:inputField onkeyup="doCheckDisabledButton()" id="lastNameField" value="{!contactInformation.LastName}"
+                               styleClass="slds-input slds-m-top_medium"
+                               style="width:200px;" required="false" /> 
+
+          </div>
+          
+          <div class="slds-col slds-size_1-of-4 slds-text-align_right slds-p-top_large slds-p-bottom_large slds-p-right_x-small">
+              
+              <div style="color:#706e6b; font-size:1rem;"> Product Name</div>
+              <div class="slds-p-top_medium" style="color:#706e6b; font-size:1rem;"> Cost</div>
+              <div class="slds-p-top_medium" style="color:#706e6b; font-size:1rem;"> Unit Count</div>
+              <div class="slds-p-top_medium" style="color:#706e6b; font-size:1rem;"> Total Amount</div>
+
+          </div>
+          
+          <div class="slds-col slds-size_1-of-4 slds-text-align_left slds-p-top_large slds-p-bottom_large slds-p-left_x-small">
+
+              <div style="color:#2b2826; font-size:1rem;">
+                  <apex:outputField value="{!productViewDetail.Name}" />
+              </div> <br/>
+              <div style="color:#2b2826; font-size:1rem;">
+                  <apex:outputField value="{!productViewDetail.Unit_Price__c}" />
+              </div>
+     			
+                  <apex:outputPanel rendered="{!isErrorDisplay}" style="position:absolute; top:70px; " id="tog" >          
+                      <section class="slds-popover slds-popover_error slds-nubbin_bottom-left slds-popover_small"
+                             role="dialog" aria-labelledby="dialog-heading-id-1" aria-describedby="dialog-body-id-12">
+                      <apex:commandLink action="{!closeErrorDisplay}" styleClass="slds-button slds-button_icon slds-button_icon-small slds-float_right slds-popover__close slds-button_icon-inverse" title="Close dialog">
+                        <svg class="slds-button__icon" aria-hidden="true">
+                          <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close')}" />
+                        </svg>
+                        <span class="slds-assistive-text">Close</span>
+                      </apex:commandLink>     
+                      <header class="slds-popover__header">
+                        <div class="slds-media slds-media_center slds-has-flexi-truncate ">
+                          <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-utility-error">
+                              <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                                <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#error')}"/>
+                              </svg>
+                            </span>
+                          </div>
+                          <div class="slds-media__body">
+                            <h2 class="slds-truncate slds-text-heading_medium" id="dialog-heading-id-1" title="Resolve error">
+                                Incorrect Unit Count
+                            </h2>
+                          </div>
+                        </div>
+                      </header>
+                      <div class="slds-popover__body" id="dialog-body-id-12">
+                        <p>In the stock of {!inStockUnitsAvailable} {!inStockProductName}</p>
+                      </div>
+                    </section>     
+                  </apex:outputPanel>
+  
+              <apex:inputText value="{!multiplier}"
+                              onkeyup="doMultiplier(), doCheckDisabledButton()" 
+                              styleClass="slds-input slds-m-top_x-small"
+                              style="width:200px; color:#2b2826; font-size:1rem;" /> <br/>                  
+
+              <div style="color:#2b2826; font-size:1rem; margin-top:15px;">
+                  $<apex:outputLabel id="myMultiplier" value="{!TotalAmount}" />
+              </div>
+              
+          </div> 
+            
+          <div class="slds-col slds-size_1-of-1 slds-border_top slds-border_bottom slds-p-top_medium slds-p-bottom_medium"
+               style="background:#f4f6fe; border-color:#e3e5ed;">
+              <div class="slds-text-align_center">
+                  <apex:commandLink action="{!showPreviousPage}" styleClass="slds-button slds-button_destructive" immediate="true"
+                                    value="Close" /> 
+                  <apex:commandButton title="Fill in the * fields." id="myDisable" disabled="{!disabledButton}"
+                                      styleClass="slds-button slds-button_brand" action="{!saveNewOrder}" value="Buy" />
+                  
+              </div>
+          </div>
+            
+     	</div>
+		    
+      <footer class="slds-p-around_large">        
+         <div class="slds-grid slds-grid_align-spread">
+           <p class="slds-col"></p>
+             <p class="slds-col">&copy; VRPTRAINING-AUGUST</p>   
+         </div>  
+      </footer>    
+
+     <apex:outputPanel rendered="{!isInsertDisplay}" id="tog2" >
+              
+         <div class="demo-only slds-is-relative" style="height: 4.5rem;">
+          <div class="slds-notification-container">
+            <div aria-live="assertive" aria-atomic="true" class="slds-assistive-text"></div>
+            <section class="slds-notification" role="dialog" aria-labelledby="noti77" aria-describedby="dialog-body-id-18">
+              <div class="slds-notification__body" id="dialog-body-id-18">
+                <div class="slds-notification__target slds-media" >
+                  <span class="slds-icon_container slds-icon-standard-task slds-media__figure" title="New Order">
+                    <svg class="slds-icon slds-icon--small" aria-hidden="true">
+                      <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/standard-sprite/svg/symbols.svg#task')}" />
+                    </svg>
+                  </span>
+                  <div class="slds-media__body">
+                    <h2 class="slds-text-heading--small slds-m-bottom--xx-small" id="noti77">
+                        
+                      <span class="slds-assistive-text"></span>Order is accepted: </h2>
+                    	<p>Product Name: {!messageProductName} </p>
+                    	<p>Unit Count: {!messageUnits}</p>
+                    	<p>Total Amount: {!messageTotalAmount}</p>
+                      	<p>Email: {!messageEmail}</p>
+                  </div>
+                </div>
+                <apex:commandLink action="{!closeIsInsertDisplay}" styleClass="slds-button slds-button_icon slds-button--icon-container slds-notification__close" title="Close">
+                  <svg class="slds-button__icon" aria-hidden="true">
+                    <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#close')}" />
+                  </svg>
+                  <span class="slds-assistive-text">Close</span>
+                </apex:commandLink>
+              </div>
+            </section>
+          </div>
+        </div>
+      
+     </apex:outputPanel>
+
+ </div>
+     
+ </apex:form> 
+            
+ </body>
+ </html>
+</apex:page>
